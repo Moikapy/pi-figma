@@ -1380,6 +1380,57 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  pi.registerTool({
+    name: "figma_plugin_create_section",
+    label: "Plugin: Create Section",
+    description: "Create a section container in the open Figma file.",
+    parameters: Type.Object({
+      name: Type.Optional(Type.String()),
+      x: Type.Optional(Type.Number()),
+      y: Type.Optional(Type.Number()),
+      width: Type.Optional(Type.Number()),
+      height: Type.Optional(Type.Number()),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "createSection",
+        name: params.name,
+        x: params.x,
+        y: params.y,
+        width: params.width,
+        height: params.height,
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_set_rotation",
+    label: "Plugin: Set Rotation",
+    description: "Rotate a node by a specified angle in degrees.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      rotation: Type.Number({ description: "Degrees (0-360)" }),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({ action: "setRotation", node_id: params.node_id, rotation: params.rotation });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_create_page",
+    label: "Plugin: Create Page",
+    description: "Create a new page in the Figma document.",
+    parameters: Type.Object({
+      name: Type.String(),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({ action: "createPage", name: params.name });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
   /* ─── ANALYTICS ─────────────────────────────────────── */
 
   pi.registerTool({

@@ -253,6 +253,26 @@ async function execute(action, params) {
       node.constraints = { ...(node.constraints || {}), ...params.constraints };
       return { id: node.id, constraints: node.constraints };
     }
+    case "createSection": {
+      const n = figma.createSection();
+      n.name = params.name || "Section";
+      n.x = params.x ?? 0;
+      n.y = params.y ?? 0;
+      n.resize(params.width ?? 400, params.height ?? 400);
+      figma.currentPage.appendChild(n);
+      return { id: n.id, type: n.type, name: n.name };
+    }
+    case "setRotation": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node || !("rotation" in node)) throw new Error("Node not found or does not support rotation");
+      node.rotation = params.rotation;
+      return { id: node.id, rotation: node.rotation };
+    }
+    case "createPage": {
+      const page = figma.createPage();
+      page.name = params.name || "New Page";
+      return { id: page.id, type: page.type, name: page.name };
+    }
     case "getPageNodes": {
       return figma.currentPage.children.map((n) => ({ id: n.id, type: n.type, name: n.name }));
     }
