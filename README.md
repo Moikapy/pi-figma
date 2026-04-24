@@ -2,7 +2,7 @@
 
 Repo: https://github.com/Moikapy/pi-figma
 
-A [pi](https://github.com/badlogic/pi-mono) extension that turns Figma designs into web apps and vice versa. Provides **42 tools** covering the full Figma REST API surface plus a **companion Figma plugin** for direct design creation and modification.
+A [pi](https://github.com/badlogic/pi-mono) extension that turns Figma designs into web apps and vice versa. Provides **46 tools** covering the full Figma REST API surface plus a **companion Figma plugin** for direct design creation and modification.
 
 ## Features
 
@@ -124,6 +124,10 @@ ln -s $(pwd)/src/figma-extension.ts ~/.pi/extensions/figma.ts
 | `figma_plugin_set_fill` | Set fill on an existing node | Plugin API |
 | `figma_plugin_set_position` | Move an existing node | Plugin API |
 | `figma_plugin_set_size` | Resize an existing node | Plugin API |
+| `figma_plugin_create_ellipse` | Create an ellipse via companion plugin | Plugin API |
+| `figma_plugin_create_line` | Create a line via companion plugin | Plugin API |
+| `figma_plugin_set_stroke` | Set stroke on an existing node | Plugin API |
+| `figma_plugin_set_effect` | Set drop shadow/blur effects | Plugin API |
 | `figma_plugin_delete_node` | Delete a node | Plugin API |
 | `figma_plugin_get_page_nodes` | List top-level nodes on current page | Plugin API |
 
