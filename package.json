@@ -1,0 +1,19 @@
+{
+  "name": "pi-figma",
+  "version": "0.1.0",
+  "description": "pi extension for the Figma REST API — read designs, export assets, write comments and variables",
+  "type": "module",
+  "main": "figma-extension.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@mariozechner/pi-coding-agent": "latest",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.34.0",
+    "dotenv": "^17.4.2"
+  }
+}
