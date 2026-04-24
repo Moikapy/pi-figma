@@ -420,6 +420,14 @@ export default function (pi: ExtensionAPI) {
   /* ─── COMMENTS ────────────────────────────────────────── */
 
   makeReadTool(pi, {
+    name: "figma_get_comment",
+    label: "Get Comment",
+    description: "Get a single comment by ID.",
+    parameters: Type.Object({ file_key: Type.String(), comment_id: Type.String() }),
+    path: (p) => `/v1/files/${p.file_key}/comments/${p.comment_id}`,
+  });
+
+  makeReadTool(pi, {
     name: "figma_get_comments",
     label: "Get Comments",
     description: "Read all comments on a Figma file.",
