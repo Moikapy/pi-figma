@@ -1148,6 +1148,113 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  /* ─── WEBHOOKS ──────────────────────────────────────── */
+
+  pi.registerTool({
+    name: "figma_get_webhooks",
+    label: "Figma: Get Webhooks",
+    description: "List webhooks for a team, project, or file.",
+    parameters: Type.Object({
+      context: Type.Optional(Type.String({ description: "team, project, or file" })),
+      context_id: Type.Optional(Type.String()),
+      plan_api_id: Type.Optional(Type.String()),
+      cursor: Type.Optional(Type.String()),
+    }),
+    async execute(_t, params: any, signal: any) {
+      const qs = new URLSearchParams();
+      if (params.context) qs.set("context", params.context);
+      if (params.context_id) qs.set("context_id", params.context_id);
+      if (params.plan_api_id) qs.set("plan_api_id", params.plan_api_id);
+      if (params.cursor) qs.set("cursor", params.cursor);
+      const q = qs.toString();
+      const data = await figmaFetch<any>(`/v2/webhooks${q ? `?${q}` : ""}`, {}, signal);
+      return { content: [{ type: "text", text: truncateJson(data) }], details: {} };
+    },
+  });
+
+  makeReadTool(pi, {
+    name: "figma_get_webhook",
+    label: "Get Webhook",
+    description: "Get a single webhook by ID.",
+    parameters: Type.Object({ webhook_id: Type.String() }),
+    path: (p) => `/v2/webhooks/${p.webhook_id}`,
+  });
+
+  makeWriteTool(pi, {
+    name: "figma_post_webhook",
+    label: "Post Webhook",
+    description: "Create a new webhook.",
+    method: "POST",
+    parameters: Type.Object({
+      event_type: Type.String({ description: "FILE_COMMENT, FILE_UPDATE, FILE_VERSION_UPDATE, LIBRARY_PUBLISH, etc." }),
+      team_id: Type.Optional(Type.String()),
+      file_key: Type.Optional(Type.String()),
+      passcode: Type.Optional(Type.String({ description: "Secret passcode for webhook verification" })),
+      endpoint: Type.String({ description: "URL to POST events to" }),
+    }),
+    path: () => "/v2/webhooks",
+    body: (p) => {
+      const b: Record<string, unknown> = { event_type: p.event_type, endpoint: p.endpoint };
+      if (p.team_id) b.team_id = p.team_id;
+      if (p.file_key) b.file_key = p.file_key;
+      if (p.passcode) b.passcode = p.passcode;
+      return b;
+    },
+  });
+
+  makeWriteTool(pi, {
+    name: "figma_update_webhook",
+    label: "Update Webhook",
+    description: "Update an existing webhook (endpoint, status, passcode).",
+    method: "PUT",
+    parameters: Type.Object({
+      webhook_id: Type.String(),
+      endpoint: Type.Optional(Type.String()),
+      status: Type.Optional(Type.String({ description: "ACTIVE or PAUSED" })),
+      passcode: Type.Optional(Type.String()),
+    }),
+    path: (p) => `/v2/webhooks/${p.webhook_id}`,
+    body: (p) => {
+      const b: Record<string, unknown> = {};
+      if (p.endpoint) b.endpoint = p.endpoint;
+      if (p.status) b.status = p.status;
+      if (p.passcode) b.passcode = p.passcode;
+      return b;
+    },
+  });
+
+  makeWriteTool(pi, {
+    name: "figma_delete_webhook",
+    label: "Delete Webhook",
+    description: "Delete a webhook.",
+    method: "DELETE",
+    parameters: Type.Object({ webhook_id: Type.String() }),
+    path: (p) => `/v2/webhooks/${p.webhook_id}`,
+  });
+
+  /* ─── OEMBED ──────────────────────────────────────────── */
+
+  pi.registerTool({
+    name: "figma_get_oembed",
+    label: "Figma: Get oEmbed",
+    description: "Get oEmbed data for a Figma file URL (title, thumbnail, author, etc.).",
+    parameters: Type.Object({
+      url: Type.String({ description: "Figma file URL" }),
+      format: Type.Optional(Type.String({ default: "json" })),
+      max_width: Type.Optional(Type.Number()),
+      max_height: Type.Optional(Type.Number()),
+    }),
+    async execute(_t, params: any, signal: any) {
+      const qs = new URLSearchParams();
+      qs.set("url", params.url);
+      if (params.format) qs.set("format", params.format);
+      if (params.max_width !== undefined) qs.set("max_width", String(params.max_width));
+      if (params.max_height !== undefined) qs.set("max_height", String(params.max_height));
+      const data = await figmaFetch<any>(`/v1/oembed?${qs.toString()}`, {}, signal);
+      return { content: [{ type: "text", text: truncateJson(data) }], details: {} };
+    },
+  });
+
   /* ─── STATUS ──────────────────────────────────────────── */
 
   pi.on("session_start", async (_event, ctx) => {
