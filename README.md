@@ -2,7 +2,7 @@
 
 Repo: https://github.com/Moikapy/pi-figma
 
-A [pi](https://github.com/badlogic/pi-mono) extension that turns Figma designs into web apps and vice versa. Provides **46 tools** covering the full Figma REST API surface plus a **companion Figma plugin** for direct design creation and modification.
+A [pi](https://github.com/badlogic/pi-mono) extension that turns Figma designs into web apps and vice versa. Provides **78 tools** — **46 REST API tools** covering the full Figma REST API surface plus **32 companion plugin tools** for direct design creation and modification.
 
 ## Features
 
@@ -130,6 +130,26 @@ ln -s $(pwd)/src/figma-extension.ts ~/.pi/extensions/figma.ts
 | `figma_plugin_set_effect` | Set drop shadow/blur effects | Plugin API |
 | `figma_plugin_delete_node` | Delete a node | Plugin API |
 | `figma_plugin_get_page_nodes` | List top-level nodes on current page | Plugin API |
+| `figma_plugin_clone_node` | Duplicate an existing node | Plugin API |
+| `figma_plugin_set_image_fill` | Upload image as node fill | Plugin API |
+| `figma_plugin_create_component` | Create a reusable component | Plugin API |
+| `figma_plugin_set_auto_layout` | Configure Auto Layout on a frame | Plugin API |
+| `figma_plugin_export_node` | Export a node as PNG/SVG/PDF base64 | Plugin API |
+| `figma_plugin_set_text` | Edit text content of a text node | Plugin API |
+| `figma_plugin_set_corner_radius` | Round corners of a rectangle/frame | Plugin API |
+| `figma_plugin_set_opacity` | Set overall node opacity | Plugin API |
+| `figma_plugin_set_blend_mode` | Set blend mode (NORMAL, MULTIPLY, etc.) | Plugin API |
+| `figma_plugin_append_child` | Move a node into another as child | Plugin API |
+| `figma_plugin_create_group` | Group existing nodes | Plugin API |
+| `figma_plugin_set_constraints` | Set responsive layout constraints | Plugin API |
+| `figma_plugin_create_section` | Create a section container | Plugin API |
+| `figma_plugin_set_rotation` | Rotate a node by angle | Plugin API |
+| `figma_plugin_create_page` | Create a new document page | Plugin API |
+| `figma_plugin_set_plugin_data` | Store metadata on a node | Plugin API |
+| `figma_plugin_get_plugin_data` | Retrieve metadata from a node | Plugin API |
+| `figma_plugin_set_export_settings` | Mark node for code export | Plugin API |
+| `figma_plugin_set_prototype_interactions` | Add click navigation between frames | Plugin API |
+| `figma_plugin_get_node` | Inspect any node by ID | Plugin API |
 
 ## Companion Plugin (Direct Design Modification)
 
