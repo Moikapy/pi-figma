@@ -171,6 +171,40 @@ async function execute(action, params) {
       node.fills = [{ type: "IMAGE", scaleMode: params.scaleMode || "FILL", imageHash: image.hash }];
       return { id: node.id };
     }
+    case "createComponent": {
+      const n = figma.createComponent();
+      n.name = params.name || "Component";
+      n.x = params.x ?? 0;
+      n.y = params.y ?? 0;
+      n.resize(params.width ?? 100, params.height ?? 100);
+      if (params.fills) n.fills = params.fills;
+      figma.currentPage.appendChild(n);
+      return { id: n.id, type: n.type, name: n.name };
+    }
+    case "setAutoLayout": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node || !("layoutMode" in node)) throw new Error("Node not found or does not support auto layout");
+      if (params.layoutMode !== undefined) node.layoutMode = params.layoutMode;
+      if (params.primaryAxisAlignItems !== undefined) node.primaryAxisAlignItems = params.primaryAxisAlignItems;
+      if (params.counterAxisAlignItems !== undefined) node.counterAxisAlignItems = params.counterAxisAlignItems;
+      if (params.itemSpacing !== undefined) node.itemSpacing = params.itemSpacing;
+      if (params.paddingTop !== undefined) node.paddingTop = params.paddingTop;
+      if (params.paddingBottom !== undefined) node.paddingBottom = params.paddingBottom;
+      if (params.paddingLeft !== undefined) node.paddingLeft = params.paddingLeft;
+      if (params.paddingRight !== undefined) node.paddingRight = params.paddingRight;
+      if (params.layoutWrap !== undefined) node.layoutWrap = params.layoutWrap;
+      return { id: node.id };
+    }
+    case "exportNode": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node) throw new Error("Node not found");
+      const bytes = await node.exportAsync({
+        format: params.format || "PNG",
+        constraint: { type: "SCALE", value: params.scale ?? 1 },
+      });
+      const b64 = figma.base64Encode(bytes);
+      return { id: node.id, base64: b64, format: params.format || "PNG", scale: params.scale ?? 1 };
+    }
     case "getPageNodes": {
       return figma.currentPage.children.map((n) => ({ id: n.id, type: n.type, name: n.name }));
     }

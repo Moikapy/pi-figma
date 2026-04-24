@@ -1190,6 +1190,86 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  pi.registerTool({
+    name: "figma_plugin_create_component",
+    label: "Plugin: Create Component",
+    description: "Create a reusable component in the open Figma file.",
+    parameters: Type.Object({
+      name: Type.Optional(Type.String()),
+      x: Type.Optional(Type.Number()),
+      y: Type.Optional(Type.Number()),
+      width: Type.Optional(Type.Number()),
+      height: Type.Optional(Type.Number()),
+      fills: Type.Optional(Type.String({ description: "JSON array of fills" })),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "createComponent",
+        name: params.name,
+        x: params.x,
+        y: params.y,
+        width: params.width,
+        height: params.height,
+        fills: params.fills ? JSON.parse(params.fills) : undefined,
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_set_auto_layout",
+    label: "Plugin: Set Auto Layout",
+    description: "Configure Auto Layout on a frame or component.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      layout_mode: Type.String({ description: "NONE, HORIZONTAL, or VERTICAL" }),
+      primary_axis_align: Type.Optional(Type.String({ description: "MIN, CENTER, MAX, SPACE_BETWEEN, SPACE_AROUND" })),
+      counter_axis_align: Type.Optional(Type.String({ description: "MIN, CENTER, MAX" })),
+      item_spacing: Type.Optional(Type.Number()),
+      padding_top: Type.Optional(Type.Number()),
+      padding_bottom: Type.Optional(Type.Number()),
+      padding_left: Type.Optional(Type.Number()),
+      padding_right: Type.Optional(Type.Number()),
+      layout_wrap: Type.Optional(Type.String({ description: "WRAP or NO_WRAP" })),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "setAutoLayout",
+        node_id: params.node_id,
+        layoutMode: params.layout_mode,
+        primaryAxisAlignItems: params.primary_axis_align,
+        counterAxisAlignItems: params.counter_axis_align,
+        itemSpacing: params.item_spacing,
+        paddingTop: params.padding_top,
+        paddingBottom: params.padding_bottom,
+        paddingLeft: params.padding_left,
+        paddingRight: params.padding_right,
+        layoutWrap: params.layout_wrap,
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_export_node",
+    label: "Plugin: Export Node",
+    description: "Export a node as PNG, SVG, or PDF via the Figma Plugin API.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      format: Type.String({ description: "PNG, SVG, or PDF" }),
+      scale: Type.Optional(Type.Number({ default: 1 })),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "exportNode",
+        node_id: params.node_id,
+        format: params.format,
+        scale: params.scale,
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
   /* ─── ANALYTICS ─────────────────────────────────────── */
 
   pi.registerTool({
