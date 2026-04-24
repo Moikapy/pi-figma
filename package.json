@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "pi extension for the Figma REST API — read designs, export assets, write comments and variables",
   "type": "module",
-  "main": "figma-extension.ts",
+  "main": "src/figma-extension.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "bun test"

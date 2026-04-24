@@ -1,1 +1,1 @@
-../figma-extension.ts
+../../src/figma-extension.ts

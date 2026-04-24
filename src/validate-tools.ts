@@ -29,7 +29,7 @@ try {
   // We can't import .ts directly without tsx/transpiler here. 
   // Instead we regex-scan the file for registration calls.
   const fs = await import("node:fs");
-  const source = fs.readFileSync("./figma-extension.ts", "utf8");
+  const source = fs.readFileSync("./src/figma-extension.ts", "utf8");
 
   const toolMatches = [...source.matchAll(/pi\.registerTool\(\{\s*name:\s*"([^"]+)"/g)];
   const cmdMatches = [...source.matchAll(/pi\.registerCommand\("([^"]+)"/g)];
