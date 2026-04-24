@@ -31,7 +31,11 @@ try {
   const fs = await import("node:fs");
   const source = fs.readFileSync("./src/figma-extension.ts", "utf8");
 
-  const toolMatches = [...source.matchAll(/pi\.registerTool\(\{\s*name:\s*"([^"]+)"/g)];
+  const toolMatches = [
+    ...source.matchAll(/pi\.registerTool\(\{\s*name:\s*"([^"]+)"/g),
+    ...source.matchAll(/makeReadTool\(pi,\s*\{\s*name:\s*"([^"]+)"/g),
+    ...source.matchAll(/makeWriteTool\(pi,\s*\{\s*name:\s*"([^"]+)"/g),
+  ];
   const cmdMatches = [...source.matchAll(/pi\.registerCommand\("([^"]+)"/g)];
   const eventMatches = [...source.matchAll(/pi\.on\("([^"]+)"/g)];
 
