@@ -252,13 +252,13 @@ export default function (pi: ExtensionAPI) {
       try {
         const summary = (await figmaFetch<any>(`/v1/files/${key}?depth=2`)).document.children
           .flatMap((page: any) =>
-            page.children?.filter((c: any) => c.type === "FRAME").map((f: any) => ({
-              label: `${page.name} › ${f.name}`,
+            page.children?.filter((c: any) => ["FRAME", "RECTANGLE", "COMPONENT", "INSTANCE", "SECTION", "GROUP"].includes(c.type)).map((f: any) => ({
+              label: `${page.name} › ${f.name} (${f.type})`,
               value: f.id,
             }))
           )
           .filter(Boolean);
-        if (!summary.length) { ctx.ui.notify("No frames found.", "warning"); return; }
+        if (!summary.length) { ctx.ui.notify("No frames or design nodes found.", "warning"); return; }
 
         const frameId = await ctx.ui.select("Pick a frame to convert:", summary.map((s: any) => s.label));
         if (!frameId) { ctx.ui.notify("Cancelled.", "warning"); return; }
@@ -877,7 +877,9 @@ export default function (pi: ExtensionAPI) {
         data.document?.children?.map((page) => ({
           name: page.name,
           id: page.id,
-          frames: page.children?.filter((c) => c.type === "FRAME").map((f) => ({ name: f.name, id: f.id })),
+          frames: page.children
+            ?.filter((c) => ["FRAME", "RECTANGLE", "COMPONENT", "INSTANCE", "SECTION", "GROUP"].includes(c.type || ""))
+            .map((f) => ({ name: f.name, id: f.id })),
         })) ?? [];
       const summary = { file_name: data.name, last_modified: data.lastModified, pages };
       return { content: [{ type: "text", text: truncateJson(summary) }], details: summary };
