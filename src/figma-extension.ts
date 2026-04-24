@@ -1033,6 +1033,186 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  // ─── WRITE-ENHANCED TOOLS ──────────────────────────────
+
+  pi.registerTool({
+    name: "figma_update_comment",
+    label: "Figma: Update Comment",
+    description: "Edit an existing comment on a Figma file.",
+    parameters: Type.Object({
+      file_key: Type.String(),
+      comment_id: Type.String(),
+      message: Type.String(),
+    }),
+    async execute(_toolCallId, params, signal, _onUpdate, ctx) {
+      checkAuth(ctx);
+      const data = await figmaFetch<Record<string, unknown>>(
+        `/v1/files/${params.file_key}/comments/${params.comment_id}`,
+        { method: "PUT", body: JSON.stringify({ message: params.message }) },
+        signal
+      );
+      return {
+        content: [{ type: "text", text: truncateJson(data) }],
+        details: { success: true },
+      };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_get_comment_reactions",
+    label: "Figma: Get Comment Reactions",
+    description: "Get all reactions on a specific comment.",
+    parameters: Type.Object({
+      file_key: Type.String(),
+      comment_id: Type.String(),
+    }),
+    async execute(_toolCallId, params, signal, _onUpdate, ctx) {
+      checkAuth(ctx);
+      const data = await figmaFetch<Record<string, unknown>>(
+        `/v1/files/${params.file_key}/comments/${params.comment_id}/reactions`,
+        {},
+        signal
+      );
+      return {
+        content: [{ type: "text", text: truncateJson(data) }],
+        details: {},
+      };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_post_comment_reaction",
+    label: "Figma: Post Comment Reaction",
+    description: "Add an emoji reaction to a comment.",
+    parameters: Type.Object({
+      file_key: Type.String(),
+      comment_id: Type.String(),
+      emoji: Type.String({ description: "Emoji shortcode: :thumbs_up:, :heart:, :hooray:, etc." }),
+    }),
+    async execute(_toolCallId, params, signal, _onUpdate, ctx) {
+      checkAuth(ctx);
+      const data = await figmaFetch<Record<string, unknown>>(
+        `/v1/files/${params.file_key}/comments/${params.comment_id}/reactions`,
+        { method: "POST", body: JSON.stringify({ emoji: params.emoji }) },
+        signal
+      );
+      return {
+        content: [{ type: "text", text: truncateJson(data) }],
+        details: { success: true },
+      };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_delete_comment_reaction",
+    label: "Figma: Delete Comment Reaction",
+    description: "Remove your emoji reaction from a comment.",
+    parameters: Type.Object({
+      file_key: Type.String(),
+      comment_id: Type.String(),
+      emoji: Type.String(),
+    }),
+    async execute(_toolCallId, params, signal, _onUpdate, ctx) {
+      checkAuth(ctx);
+      const data = await figmaFetch<Record<string, unknown>>(
+        `/v1/files/${params.file_key}/comments/${params.comment_id}/reactions/${encodeURIComponent(params.emoji)}`,
+        { method: "DELETE" },
+        signal
+      );
+      return {
+        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+        details: { success: true },
+      };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_put_variables",
+    label: "Figma: Put Variables",
+    description: "Modify existing variables in a file (Enterprise). Uses PUT semantics.",
+    parameters: Type.Object({
+      file_key: Type.String(),
+      variables: Type.String({ description: "JSON string: array of variable objects to modify" }),
+      variableCollections: Type.Optional(
+        Type.String({ description: "JSON string: array of variable collections" })
+      ),
+      variableModes: Type.Optional(
+        Type.String({ description: "JSON string: array of variable modes" })
+      ),
+    }),
+    async execute(_toolCallId, params, signal, _onUpdate, ctx) {
+      checkAuth(ctx);
+      const body: Record<string, unknown> = { variables: JSON.parse(params.variables) };
+      if (params.variableCollections)
+        body.variableCollections = JSON.parse(params.variableCollections);
+      if (params.variableModes) body.variableModes = JSON.parse(params.variableModes);
+      const data = await figmaFetch<Record<string, unknown>>(
+        `/v1/files/${params.file_key}/variables`,
+        { method: "PUT", body: JSON.stringify(body) },
+        signal
+      );
+      return {
+        content: [{ type: "text", text: truncateJson(data) }],
+        details: { success: true },
+      };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_put_dev_resource",
+    label: "Figma: Update Dev Resource",
+    description: "Update an existing dev resource on a node.",
+    parameters: Type.Object({
+      file_key: Type.String(),
+      dev_resource_id: Type.String(),
+      node_id: Type.Optional(Type.String()),
+      name: Type.Optional(Type.String()),
+      url: Type.Optional(Type.String()),
+    }),
+    async execute(_toolCallId, params, signal, _onUpdate, ctx) {
+      checkAuth(ctx);
+      const body: Record<string, unknown> = {};
+      if (params.node_id) body.node_id = params.node_id;
+      if (params.name) body.name = params.name;
+      if (params.url) body.url = params.url;
+      const data = await figmaFetch<Record<string, unknown>>(
+        `/v1/files/${params.file_key}/dev_resources/${params.dev_resource_id}`,
+        { method: "PUT", body: JSON.stringify(body) },
+        signal
+      );
+      return {
+        content: [{ type: "text", text: truncateJson(data) }],
+        details: { success: true },
+      };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_post_dev_resources",
+    label: "Figma: Post Dev Resources (Bulk)",
+    description:
+      "Create dev resources across multiple files in one call. Each resource needs file_key, node_id, name, and url.",
+    parameters: Type.Object({
+      dev_resources: Type.String({
+        description:
+          'JSON string array: [{"file_key":"...","node_id":"...","name":"...","url":"..."}]',
+      }),
+    }),
+    async execute(_toolCallId, params, signal, _onUpdate, ctx) {
+      checkAuth(ctx);
+      const body = { dev_resources: JSON.parse(params.dev_resources) };
+      const data = await figmaFetch<Record<string, unknown>>(
+        `/v1/dev_resources`,
+        { method: "POST", body: JSON.stringify(body) },
+        signal
+      );
+      return {
+        content: [{ type: "text", text: truncateJson(data) }],
+        details: { success: true },
+      };
+    },
+  });
+
   // ─── STATUS ────────────────────────────────────────────
 
   pi.on("session_start", async (_event, ctx) => {
