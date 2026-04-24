@@ -111,6 +111,12 @@ async function execute(action, params) {
       if (params.strokeWeight !== undefined) node.strokeWeight = params.strokeWeight;
       return { id: node.id };
     }
+    case "setEffect": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node || !("effects" in node)) throw new Error("Node not found or does not support effects");
+      node.effects = params.effects || [];
+      return { id: node.id };
+    }
     case "setPosition": {
       const node = figma.getNodeById(params.node_id);
       if (!node || !("x" in node)) throw new Error("Node not found or does not support position");

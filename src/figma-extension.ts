@@ -1060,6 +1060,94 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  pi.registerTool({
+    name: "figma_plugin_create_ellipse",
+    label: "Plugin: Create Ellipse",
+    description: "Create an ellipse in the open Figma file via the companion plugin.",
+    parameters: Type.Object({
+      name: Type.Optional(Type.String()),
+      x: Type.Optional(Type.Number()),
+      y: Type.Optional(Type.Number()),
+      width: Type.Optional(Type.Number()),
+      height: Type.Optional(Type.Number()),
+      fills: Type.Optional(Type.String({ description: "JSON array of fills" })),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "createEllipse",
+        name: params.name,
+        x: params.x,
+        y: params.y,
+        width: params.width,
+        height: params.height,
+        fills: params.fills ? JSON.parse(params.fills) : undefined,
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_create_line",
+    label: "Plugin: Create Line",
+    description: "Create a line in the open Figma file via the companion plugin.",
+    parameters: Type.Object({
+      name: Type.Optional(Type.String()),
+      x: Type.Optional(Type.Number()),
+      y: Type.Optional(Type.Number()),
+      width: Type.Optional(Type.Number()),
+      strokes: Type.Optional(Type.String({ description: "JSON array of strokes" })),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "createLine",
+        name: params.name,
+        x: params.x,
+        y: params.y,
+        width: params.width,
+        strokes: params.strokes ? JSON.parse(params.strokes) : undefined,
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_set_stroke",
+    label: "Plugin: Set Stroke",
+    description: "Set the stroke on an existing node.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      strokes: Type.String({ description: "JSON array of strokes" }),
+      stroke_weight: Type.Optional(Type.Number()),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "setStroke",
+        node_id: params.node_id,
+        strokes: JSON.parse(params.strokes),
+        strokeWeight: params.stroke_weight,
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_set_effect",
+    label: "Plugin: Set Effect",
+    description: "Set drop shadows/blur effects on an existing node.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      effects: Type.String({ description: "JSON array of effects" }),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "setEffect",
+        node_id: params.node_id,
+        effects: JSON.parse(params.effects),
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
   /* ─── STATUS ──────────────────────────────────────────── */
 
   pi.on("session_start", async (_event, ctx) => {
