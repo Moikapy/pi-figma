@@ -1,6 +1,8 @@
 # `pi-figma` — pi Extension for the Figma REST API
 
-A [pi](https://github.com/badlogic/pi-mono) extension that turns Figma designs into web apps and vice versa. Provides 26+ tools covering the full Figma REST API surface, plus smart composite helpers for design-to-code workflows.
+Repo: https://github.com/Moikapy/pi-figma
+
+A [pi](https://github.com/badlogic/pi-mono) extension that turns Figma designs into web apps and vice versa. Provides **34 tools** covering the full Figma REST API surface, plus smart composite helpers for design-to-code workflows.
 
 ## Features
 
@@ -9,7 +11,7 @@ A [pi](https://github.com/badlogic/pi-mono) extension that turns Figma designs i
 - 💬 **Write comments** — post, delete, and read file comments
 - 🎨 **Extract tokens** — design tokens (colors, typography, spacing) from styles + variables
 - 📊 **Screens overview** — high-level summary of pages and frames before deep-diving
-- 🔗 **Dev resources** — attach links to GitHub, Storybook, Jira on Figma nodes
+- 🧙 **Design-to-Code Wizard** — `/figma-to-react` command walks you through picking a frame and converting it to React + Tailwind
 - 🔐 **OAuth + PAT** — personal access tokens or full OAuth 2.0 flow
 
 ## Install
@@ -20,12 +22,20 @@ Copy or symlink into your project's `.pi/extensions/`:
 ln -s path/to/pi-figma/figma-extension.ts .pi/extensions/figma.ts
 ```
 
-Or add to your `settings.json`:
+Or install via npm/git in `settings.json`:
 
 ```json
 {
-  "extensions": ["/path/to/pi-figma/figma-extension.ts"]
+  "extensions": ["npm:@moikapy/pi-figma"]
 }
+```
+
+Or clone and symlink:
+
+```bash
+git clone https://github.com/Moikapy/pi-figma.git
+cd pi-figma
+ln -s $(pwd)/src/figma-extension.ts ~/.pi/extensions/figma.ts
 ```
 
 ## Auth
@@ -49,6 +59,13 @@ Or add to your `settings.json`:
    ```
 3. In pi, run `/figma-auth` and follow the flow.
 
+## Commands
+
+| Command | What it does |
+|---------|-------------|
+| `/figma-auth` | Authenticate with Figma (PAT or OAuth 2.0) |
+| `/figma-to-react` | Interactive wizard: pick a frame → fetch data → generate React + Tailwind |
+
 ## Tools
 
 | Tool | What it does | REST endpoint |
@@ -60,9 +77,14 @@ Or add to your `settings.json`:
 | `figma_get_images` | Export rendered images (returns URLs) | `GET /v1/images/:key` |
 | `figma_get_file_images` | Image fill blobs | `GET /v1/files/:key/images` |
 | `figma_export_assets` | Export AND download assets locally | `GET /v1/images/:key` + fs write |
-| `figma_get_comments` | Read file comments | `GET /v1/files/:key/comments` |
+| `figma_get_comments` | Read all file comments | `GET /v1/files/:key/comments` |
+| `figma_get_comment` | Read a single comment | `GET /v1/files/:key/comments/:id` |
 | `figma_post_comment` | Post a comment | `POST /v1/files/:key/comments` |
+| `figma_update_comment` | Edit an existing comment | `PUT /v1/files/:key/comments/:id` |
 | `figma_delete_comment` | Delete a comment | `DELETE /v1/files/:key/comments/:id` |
+| `figma_get_comment_reactions` | Read comment reactions | `GET /v1/files/:key/comments/:id/reactions` |
+| `figma_post_comment_reaction` | Add a reaction | `POST /v1/files/:key/comments/:id/reactions` |
+| `figma_delete_comment_reaction` | Remove a reaction | `DELETE /v1/files/:key/comments/:id/reactions/:emoji` |
 | `figma_get_team_projects` | List team projects | `GET /v1/teams/:id/projects` |
 | `figma_get_project_files` | List files in a project | `GET /v1/projects/:id/files` |
 | `figma_get_me` | Current user info | `GET /v1/me` |
@@ -74,9 +96,12 @@ Or add to your `settings.json`:
 | `figma_get_variables_local` | Local variables (Enterprise) | `GET /v1/files/:key/variables/local` |
 | `figma_get_variables_published` | Published variables (Enterprise) | `GET /v1/files/:key/variables/published` |
 | `figma_post_variables` | Create/update variables (Enterprise) | `POST /v1/files/:key/variables` |
+| `figma_put_variables` | Modify existing variables (Enterprise) | `PUT /v1/files/:key/variables` |
 | `figma_get_dev_resources` | Dev resource links on nodes | `GET /v1/files/:key/dev_resources` |
 | `figma_post_dev_resource` | Attach a dev resource | `POST /v1/files/:key/dev_resources` |
+| `figma_put_dev_resource` | Update an existing dev resource | `PUT /v1/files/:key/dev_resources/:id` |
 | `figma_delete_dev_resource` | Remove a dev resource | `DELETE /v1/files/:key/dev_resources/:id` |
+| `figma_post_dev_resources` | Bulk create dev resources (multi-file) | `POST /v1/dev_resources` |
 | `figma_extract_tokens` | Smart composite: styles + variables JSON | Multiple |
 | `figma_screens_summary` | Smart composite: pages + frames overview | `GET /v1/files/:key?depth=2` |
 
