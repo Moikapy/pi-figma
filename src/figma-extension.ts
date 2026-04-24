@@ -1340,6 +1340,46 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  pi.registerTool({
+    name: "figma_plugin_create_group",
+    label: "Plugin: Create Group",
+    description: "Create a group containing existing nodes.",
+    parameters: Type.Object({
+      node_ids: Type.String({ description: "Comma-separated node IDs to group" }),
+      name: Type.Optional(Type.String()),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "createGroup",
+        node_ids: params.node_ids.split(",").map((s: string) => s.trim()),
+        name: params.name,
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_set_constraints",
+    label: "Plugin: Set Constraints",
+    description: "Set layout constraints on a node (responsive behavior).",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      horizontal: Type.String({ description: "MIN, CENTER, MAX, STRETCH, SCALE, LEFT_RIGHT" }),
+      vertical: Type.String({ description: "MIN, CENTER, MAX, STRETCH, SCALE, TOP_BOTTOM" }),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "setConstraints",
+        node_id: params.node_id,
+        constraints: {
+          horizontal: params.horizontal,
+          vertical: params.vertical,
+        },
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
   /* ─── ANALYTICS ─────────────────────────────────────── */
 
   pi.registerTool({

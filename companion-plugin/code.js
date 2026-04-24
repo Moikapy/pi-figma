@@ -240,6 +240,19 @@ async function execute(action, params) {
       parent.appendChild(child);
       return { parent_id: parent.id, child_id: child.id };
     }
+    case "createGroup": {
+      const nodes = params.node_ids?.map((id: string) => figma.getNodeById(id)).filter(Boolean) ?? [];
+      if (nodes.length === 0) throw new Error("No valid nodes to group");
+      const group = figma.group(nodes, figma.currentPage);
+      if (params.name) group.name = params.name;
+      return { id: group.id, type: group.type, name: group.name };
+    }
+    case "setConstraints": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node || !("constraints" in node)) throw new Error("Node not found or does not support constraints");
+      node.constraints = { ...(node.constraints || {}), ...params.constraints };
+      return { id: node.id, constraints: node.constraints };
+    }
     case "getPageNodes": {
       return figma.currentPage.children.map((n) => ({ id: n.id, type: n.type, name: n.name }));
     }
