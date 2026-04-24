@@ -1431,6 +1431,35 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  pi.registerTool({
+    name: "figma_plugin_set_plugin_data",
+    label: "Plugin: Set Plugin Data",
+    description: "Store key-value metadata on a node for design-to-code markers.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      key: Type.String(),
+      value: Type.String(),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({ action: "setPluginData", node_id: params.node_id, key: params.key, value: params.value });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_get_plugin_data",
+    label: "Plugin: Get Plugin Data",
+    description: "Retrieve metadata stored on a node.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      key: Type.String(),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({ action: "getPluginData", node_id: params.node_id, key: params.key });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
   /* ─── ANALYTICS ─────────────────────────────────────── */
 
   pi.registerTool({

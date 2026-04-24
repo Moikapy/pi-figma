@@ -273,6 +273,18 @@ async function execute(action, params) {
       page.name = params.name || "New Page";
       return { id: page.id, type: page.type, name: page.name };
     }
+    case "setPluginData": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node) throw new Error("Node not found");
+      node.setPluginData(params.key, params.value);
+      return { id: node.id, key: params.key, value: params.value };
+    }
+    case "getPluginData": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node) throw new Error("Node not found");
+      const value = node.getPluginData(params.key);
+      return { id: node.id, key: params.key, value };
+    }
     case "getPageNodes": {
       return figma.currentPage.children.map((n) => ({ id: n.id, type: n.type, name: n.name }));
     }
