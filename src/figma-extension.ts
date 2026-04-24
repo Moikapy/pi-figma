@@ -266,26 +266,47 @@ export default function (pi: ExtensionAPI) {
 
         ctx.ui.setWorkingMessage("Exporting assets + tokens...");
         const [frameData, tokens, imageUrls] = await Promise.all([
-          figmaFetch<any>(`/v1/files/${key}/nodes?ids=${encodeURIComponent(selectedFrame)}&depth=4`, {}, undefined),
-          figmaFetch<any>(`/v1/files/${key}/styles`, {}, undefined).catch(() => ({} as any)),
-          figmaFetch<any>(`/v1/images/${key}?ids=${encodeURIComponent(selectedFrame)}&format=svg&scale=2`, {}, undefined).catch(() => ({})),
+          figmaFetch<any>(`/v1/files/${key}/nodes?ids=${encodeURIComponent(selectedFrame)}&depth=4`, {}, ctx.signal),
+          figmaFetch<any>(`/v1/files/${key}/styles`, {}, ctx.signal).catch(() => null),
+          figmaFetch<any>(`/v1/images/${key}?ids=${encodeURIComponent(selectedFrame)}&format=svg&scale=2`, {}, ctx.signal).catch(() => null),
         ]);
+
+        const outDir = join(ctx.cwd, "figma-assets", key);
+        await mkdir(outDir, { recursive: true });
+        const downloadedAssets: Array<{ id: string; path: string }> = [];
+        for (const [id, url] of Object.entries(imageUrls?.images ?? {})) {
+          if (!url || typeof url !== "string") continue;
+          const dest = join(outDir, `${id.replace(/:/g, "_")}.svg`);
+          const img = await fetch(url, { signal: ctx.signal });
+          if (!img.ok) continue;
+          await writeFile(dest, new Uint8Array(await img.arrayBuffer()));
+          downloadedAssets.push({ id, path: dest });
+        }
+
+        const designData = {
+          file_key: key,
+          file_name: fileRes.name,
+          frame_id: selectedFrame,
+          frame: frameData?.nodes?.[selectedFrame]?.document ?? null,
+          tokens,
+          assets: downloadedAssets,
+          generated_at: new Date().toISOString(),
+        };
+        const designJsonPath = join(ctx.cwd, `${key}_${selectedFrame.replace(/:/g, "_")}_design.json`);
+        await writeFile(designJsonPath, JSON.stringify(designData, null, 2));
 
         const payload = {
           file_key: key,
           frame_id: selectedFrame,
-          frame: frameData.nodes[selectedFrame]?.document,
+          frame: frameData?.nodes?.[selectedFrame]?.document ?? null,
           tokens,
-          image_urls: imageUrls.images,
-          instruction: "Convert this Figma frame into a React + Tailwind component. Follow the SKILL.md rules.",
+          assets: downloadedAssets,
         };
 
-        pi.sendMessage({
-          customType: "figma-wizard",
-          content: `Design data loaded for frame \`${selectedFrame}\`. Ready to convert to React + Tailwind.`,
-          display: true,
-          details: payload,
-        }, { triggerTurn: true });
+        pi.sendUserMessage(
+          `Design data loaded for frame \`${selectedFrame}\`. File: \`${key}\`. Assets: ${downloadedAssets.length} SVGs saved to \`${outDir}\`. Design JSON: \`${designJsonPath}\`.\n\nConvert this Figma frame into a React + Tailwind CSS component.`,
+          { deliverAs: "followUp" }
+        );
       } catch (e: any) {
         ctx.ui.notify(e.message, "error");
       } finally {
