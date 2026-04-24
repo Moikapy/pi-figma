@@ -285,6 +285,25 @@ async function execute(action, params) {
       const value = node.getPluginData(params.key);
       return { id: node.id, key: params.key, value };
     }
+    case "setExportSettings": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node || !("exportSettings" in node)) throw new Error("Node not found or does not support export settings");
+      node.exportSettings = params.settings || [];
+      return { id: node.id, exportSettings: node.exportSettings };
+    }
+    case "setPrototypeInteractions": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node || !("reactions" in node)) throw new Error("Node not found or does not support prototype interactions");
+      node.reactions = [{
+        action: {
+          type: params.actionType === "URL" ? "URL" : "NODE",
+          ...(params.destinationId ? { destinationId: params.destinationId } : {}),
+          ...(params.url ? { url: params.url } : {}),
+        },
+        trigger: { type: params.trigger || "ON_CLICK" },
+      }];
+      return { id: node.id, reactions: node.reactions };
+    }
     case "getPageNodes": {
       return figma.currentPage.children.map((n) => ({ id: n.id, type: n.type, name: n.name }));
     }

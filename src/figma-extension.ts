@@ -1460,6 +1460,55 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  pi.registerTool({
+    name: "figma_plugin_set_export_settings",
+    label: "Plugin: Set Export Settings",
+    description: "Configure export formats on a node so it can be exported via figma_export_assets.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      format: Type.String({ description: "PNG, SVG, or PDF" }),
+      suffix: Type.Optional(Type.String()),
+      constraint: Type.Optional(Type.String({ description: "SCALE or WIDTH or HEIGHT" })),
+      constraint_value: Type.Optional(Type.Number()),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "setExportSettings",
+        node_id: params.node_id,
+        settings: [{
+          format: params.format,
+          suffix: params.suffix || "",
+          constraint: params.constraint ? { type: params.constraint, value: params.constraint_value } : undefined,
+        }],
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_set_prototype_interactions",
+    label: "Plugin: Set Prototype Interactions",
+    description: "Add click/press interactions that navigate to other frames.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      trigger: Type.String({ description: "ON_CLICK, ON_PRESS, ON_HOVER, etc." }),
+      action: Type.String({ description: "NODE or URL" }),
+      destination_id: Type.Optional(Type.String({ description: "Target frame/node ID" })),
+      url: Type.Optional(Type.String()),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "setPrototypeInteractions",
+        node_id: params.node_id,
+        trigger: params.trigger,
+        actionType: params.action,
+        destinationId: params.destination_id,
+        url: params.url,
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
   /* ─── ANALYTICS ─────────────────────────────────────── */
 
   pi.registerTool({
