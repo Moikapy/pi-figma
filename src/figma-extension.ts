@@ -884,6 +884,180 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  /* ─── PLUGIN COMPANION (local relay) ──────────────────── */
+
+  async function sendPluginCmd(body: Record<string, unknown>) {
+    const res = await fetch("http://localhost:8787/cmd", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = (await res.json()) as { ok: boolean; error?: string; id?: string };
+    if (!res.ok || !data.ok) throw new Error(data.error || `Relay returned ${res.status}`);
+    return data;
+  }
+
+  pi.registerCommand("figma-relay", {
+    description: "Start the Figma companion plugin WebSocket relay",
+    handler: async (_args, ctx) => {
+      ctx.ui.notify("To start the relay, run this in a separate terminal:", "info");
+      ctx.ui.notify("  bun src/ws-relay.ts", "info");
+      ctx.ui.notify("Then open the companion plugin in Figma (Import plugin from manifest.json).", "info");
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_create_frame",
+    label: "Plugin: Create Frame",
+    description: "Create a frame in the open Figma file via the companion plugin.",
+    parameters: Type.Object({
+      name: Type.Optional(Type.String()),
+      x: Type.Optional(Type.Number()),
+      y: Type.Optional(Type.Number()),
+      width: Type.Optional(Type.Number()),
+      height: Type.Optional(Type.Number()),
+      fills: Type.Optional(Type.String({ description: "JSON array of fills" })),
+      layoutMode: Type.Optional(Type.String({ description: "HORIZONTAL or VERTICAL" })),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "createFrame",
+        name: params.name,
+        x: params.x,
+        y: params.y,
+        width: params.width,
+        height: params.height,
+        fills: params.fills ? JSON.parse(params.fills) : undefined,
+        layoutMode: params.layoutMode,
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_create_rectangle",
+    label: "Plugin: Create Rectangle",
+    description: "Create a rectangle in the open Figma file via the companion plugin.",
+    parameters: Type.Object({
+      name: Type.Optional(Type.String()),
+      x: Type.Optional(Type.Number()),
+      y: Type.Optional(Type.Number()),
+      width: Type.Optional(Type.Number()),
+      height: Type.Optional(Type.Number()),
+      fills: Type.Optional(Type.String({ description: "JSON array of fills" })),
+      cornerRadius: Type.Optional(Type.Number()),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "createRectangle",
+        name: params.name,
+        x: params.x,
+        y: params.y,
+        width: params.width,
+        height: params.height,
+        fills: params.fills ? JSON.parse(params.fills) : undefined,
+        cornerRadius: params.cornerRadius,
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_create_text",
+    label: "Plugin: Create Text",
+    description: "Create a text node in the open Figma file via the companion plugin.",
+    parameters: Type.Object({
+      name: Type.Optional(Type.String()),
+      text: Type.String(),
+      x: Type.Optional(Type.Number()),
+      y: Type.Optional(Type.Number()),
+      fontSize: Type.Optional(Type.Number()),
+      fontFamily: Type.Optional(Type.String()),
+      fontStyle: Type.Optional(Type.String()),
+      fills: Type.Optional(Type.String({ description: "JSON array of fills" })),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "createText",
+        name: params.name,
+        text: params.text,
+        x: params.x,
+        y: params.y,
+        fontSize: params.fontSize,
+        fontFamily: params.fontFamily,
+        fontStyle: params.fontStyle,
+        fills: params.fills ? JSON.parse(params.fills) : undefined,
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_set_fill",
+    label: "Plugin: Set Fill",
+    description: "Set the fill of an existing node.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      fills: Type.String({ description: "JSON array of fills" }),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({ action: "setFill", node_id: params.node_id, fills: JSON.parse(params.fills) });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_set_position",
+    label: "Plugin: Set Position",
+    description: "Move an existing node to x, y.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      x: Type.Optional(Type.Number()),
+      y: Type.Optional(Type.Number()),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({ action: "setPosition", node_id: params.node_id, x: params.x, y: params.y });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_set_size",
+    label: "Plugin: Set Size",
+    description: "Resize an existing node.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      width: Type.Optional(Type.Number()),
+      height: Type.Optional(Type.Number()),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({ action: "setSize", node_id: params.node_id, width: params.width, height: params.height });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_delete_node",
+    label: "Plugin: Delete Node",
+    description: "Delete a node from the open Figma file.",
+    parameters: Type.Object({ node_id: Type.String() }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({ action: "deleteNode", node_id: params.node_id });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_get_page_nodes",
+    label: "Plugin: Get Page Nodes",
+    description: "List all top-level nodes on the current page via the companion plugin.",
+    parameters: Type.Object({}),
+    async execute() {
+      const data = await sendPluginCmd({ action: "getPageNodes" });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
   /* ─── STATUS ──────────────────────────────────────────── */
 
   pi.on("session_start", async (_event, ctx) => {

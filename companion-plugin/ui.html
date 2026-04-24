@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Inter, system-ui, sans-serif; margin: 0; padding: 16px; background: #1e1e1e; color: #e5e5e5; }
+    h1 { font-size: 14px; margin: 0 0 8px; }
+    .status { font-size: 12px; padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; }
+    .ok { background: #166534; color: #bbf7d0; }
+    .err { background: #7f1d1d; color: #fecaca; }
+    .muted { color: #a3a3a3; font-size: 11px; }
+    pre { font-size: 10px; background: #262626; padding: 8px; border-radius: 4px; overflow: auto; max-height: 80px; }
+  </style>
+</head>
+<body>
+  <h1>pi-figma companion</h1>
+  <div id="status" class="status err">Disconnected</div>
+  <div class="muted">Relay: ws://localhost:8787/ws</div>
+  <div class="muted">Waiting for commands from pi...</div>
+  <pre id="log"></pre>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const logEl = document.getElementById('log');
+    let ws;
+    let reconnectTimer;
+
+    function log(msg) {
+      const line = typeof msg === 'string' ? msg : JSON.stringify(msg, null, 2);
+      logEl.textContent = line.slice(0, 2000) + (line.length > 2000 ? '...' : '');
+      console.log('[companion]', line);
+    }
+
+    function connect() {
+      ws = new WebSocket('ws://localhost:8787/ws');
+      ws.onopen = () => {
+        statusEl.textContent = 'Connected 🎨';
+        statusEl.className = 'status ok';
+        parent.postMessage({ pluginMessage: { type: 'connected' } }, '*');
+      };
+      ws.onmessage = (ev) => {
+        try {
+          const data = JSON.parse(ev.data);
+          log({ received: data });
+          parent.postMessage({ pluginMessage: { type: 'cmd', payload: data } }, '*');
+        } catch (e) {
+          log('Parse error: ' + e.message);
+        }
+      };
+      ws.onclose = () => {
+        statusEl.textContent = 'Disconnected — retrying...';
+        statusEl.className = 'status err';
+        parent.postMessage({ pluginMessage: { type: 'disconnected' } }, '*');
+        clearTimeout(reconnectTimer);
+        reconnectTimer = setTimeout(connect, 2000);
+      };
+      ws.onerror = (e) => {
+        log('WebSocket error');
+      };
+    }
+
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+      if (msg.type === 'result' && ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(msg.payload));
+      }
+    };
+
+    connect();
+  </script>
+</body>
+</html>
