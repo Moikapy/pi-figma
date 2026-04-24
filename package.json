@@ -1,12 +1,13 @@
 {
   "name": "pi-figma",
-  "version": "0.1.0",
-  "description": "pi extension for the Figma REST API — read designs, export assets, write comments and variables",
+  "version": "0.2.0",
+  "description": "pi extension for the Figma REST API — read designs, export assets, write comments and variables, and modify designs via companion plugin",
   "type": "module",
   "main": "src/figma-extension.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "validate": "bun src/validate-tools.ts",
+    "relay": "bun src/ws-relay.ts"
   },
   "devDependencies": {
     "@mariozechner/pi-coding-agent": "latest",

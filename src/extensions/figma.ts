@@ -1,1 +1,0 @@
-../figma-extension.ts
