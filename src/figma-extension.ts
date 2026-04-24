@@ -1270,6 +1270,76 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  pi.registerTool({
+    name: "figma_plugin_set_text",
+    label: "Plugin: Set Text",
+    description: "Edit the content of an existing text node.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      text: Type.String(),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({ action: "setText", node_id: params.node_id, text: params.text });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_set_corner_radius",
+    label: "Plugin: Set Corner Radius",
+    description: "Round the corners of a rectangle, frame, or component.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      radius: Type.Number(),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({ action: "setCornerRadius", node_id: params.node_id, radius: params.radius });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_set_opacity",
+    label: "Plugin: Set Opacity",
+    description: "Set the overall opacity of a node (0-1).",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      opacity: Type.Number(),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({ action: "setOpacity", node_id: params.node_id, opacity: params.opacity });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_set_blend_mode",
+    label: "Plugin: Set Blend Mode",
+    description: "Set the blend mode of a node (PASS_THROUGH, NORMAL, DARKEN, MULTIPLY, etc.).",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      blend_mode: Type.String(),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({ action: "setBlendMode", node_id: params.node_id, blendMode: params.blend_mode });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_append_child",
+    label: "Plugin: Append Child",
+    description: "Move a node to become a child of another node.",
+    parameters: Type.Object({
+      parent_id: Type.String(),
+      child_id: Type.String(),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({ action: "appendChild", parent_id: params.parent_id, child_id: params.child_id });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
   /* ─── ANALYTICS ─────────────────────────────────────── */
 
   pi.registerTool({

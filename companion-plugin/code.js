@@ -205,6 +205,41 @@ async function execute(action, params) {
       const b64 = figma.base64Encode(bytes);
       return { id: node.id, base64: b64, format: params.format || "PNG", scale: params.scale ?? 1 };
     }
+    case "setText": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node || node.type !== "TEXT") throw new Error("Node not found or not a text node");
+      await figma.loadFontAsync(node.fontName);
+      node.characters = params.text || "";
+      return { id: node.id };
+    }
+    case "setCornerRadius": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node || !("topLeftRadius" in node)) throw new Error("Node not found or does not support corner radius");
+      node.topLeftRadius = params.radius;
+      node.topRightRadius = params.radius;
+      node.bottomLeftRadius = params.radius;
+      node.bottomRightRadius = params.radius;
+      return { id: node.id };
+    }
+    case "setOpacity": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node || !("opacity" in node)) throw new Error("Node not found or does not support opacity");
+      node.opacity = params.opacity;
+      return { id: node.id, opacity: node.opacity };
+    }
+    case "setBlendMode": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node || !("blendMode" in node)) throw new Error("Node not found or does not support blend mode");
+      node.blendMode = params.blendMode;
+      return { id: node.id, blendMode: node.blendMode };
+    }
+    case "appendChild": {
+      const parent = figma.getNodeById(params.parent_id);
+      const child = figma.getNodeById(params.child_id);
+      if (!parent || !child) throw new Error("Parent or child not found");
+      parent.appendChild(child);
+      return { parent_id: parent.id, child_id: child.id };
+    }
     case "getPageNodes": {
       return figma.currentPage.children.map((n) => ({ id: n.id, type: n.type, name: n.name }));
     }
