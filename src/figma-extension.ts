@@ -1148,6 +1148,140 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  /* ─── ANALYTICS ─────────────────────────────────────── */
+
+  pi.registerTool({
+    name: "figma_get_component_actions",
+    label: "Figma: Get Component Actions",
+    description: "Get library analytics component action data (insert, detach, delete).",
+    parameters: Type.Object({
+      file_key: Type.String({ description: "Library file key" }),
+      group_by: Type.String({ description: "component or team" }),
+      start_date: Type.Optional(Type.String({ description: "YYYY-MM-DD" })),
+      end_date: Type.Optional(Type.String({ description: "YYYY-MM-DD" })),
+      cursor: Type.Optional(Type.String()),
+    }),
+    async execute(_t, params: any, signal: any) {
+      const qs = new URLSearchParams();
+      qs.set("group_by", params.group_by);
+      if (params.start_date) qs.set("start_date", params.start_date);
+      if (params.end_date) qs.set("end_date", params.end_date);
+      if (params.cursor) qs.set("cursor", params.cursor);
+      const data = await figmaFetch<any>(`/v1/analytics/libraries/${params.file_key}/component/actions?${qs.toString()}`, {}, signal);
+      return { content: [{ type: "text", text: truncateJson(data) }], details: {} };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_get_component_usages",
+    label: "Figma: Get Component Usages",
+    description: "Get library analytics component usage data (instances in files).",
+    parameters: Type.Object({
+      file_key: Type.String(),
+      group_by: Type.String({ description: "component or team" }),
+      start_date: Type.Optional(Type.String()),
+      end_date: Type.Optional(Type.String()),
+      cursor: Type.Optional(Type.String()),
+    }),
+    async execute(_t, params: any, signal: any) {
+      const qs = new URLSearchParams();
+      qs.set("group_by", params.group_by);
+      if (params.start_date) qs.set("start_date", params.start_date);
+      if (params.end_date) qs.set("end_date", params.end_date);
+      if (params.cursor) qs.set("cursor", params.cursor);
+      const data = await figmaFetch<any>(`/v1/analytics/libraries/${params.file_key}/component/usages?${qs.toString()}`, {}, signal);
+      return { content: [{ type: "text", text: truncateJson(data) }], details: {} };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_get_style_actions",
+    label: "Figma: Get Style Actions",
+    description: "Get library analytics style action data (apply, detach, modify).",
+    parameters: Type.Object({
+      file_key: Type.String(),
+      group_by: Type.String({ description: "style or team" }),
+      start_date: Type.Optional(Type.String()),
+      end_date: Type.Optional(Type.String()),
+      cursor: Type.Optional(Type.String()),
+    }),
+    async execute(_t, params: any, signal: any) {
+      const qs = new URLSearchParams();
+      qs.set("group_by", params.group_by);
+      if (params.start_date) qs.set("start_date", params.start_date);
+      if (params.end_date) qs.set("end_date", params.end_date);
+      if (params.cursor) qs.set("cursor", params.cursor);
+      const data = await figmaFetch<any>(`/v1/analytics/libraries/${params.file_key}/style/actions?${qs.toString()}`, {}, signal);
+      return { content: [{ type: "text", text: truncateJson(data) }], details: {} };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_get_style_usages",
+    label: "Figma: Get Style Usages",
+    description: "Get library analytics style usage data.",
+    parameters: Type.Object({
+      file_key: Type.String(),
+      group_by: Type.String({ description: "style or team" }),
+      start_date: Type.Optional(Type.String()),
+      end_date: Type.Optional(Type.String()),
+      cursor: Type.Optional(Type.String()),
+    }),
+    async execute(_t, params: any, signal: any) {
+      const qs = new URLSearchParams();
+      qs.set("group_by", params.group_by);
+      if (params.start_date) qs.set("start_date", params.start_date);
+      if (params.end_date) qs.set("end_date", params.end_date);
+      if (params.cursor) qs.set("cursor", params.cursor);
+      const data = await figmaFetch<any>(`/v1/analytics/libraries/${params.file_key}/style/usages?${qs.toString()}`, {}, signal);
+      return { content: [{ type: "text", text: truncateJson(data) }], details: {} };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_get_variable_actions",
+    label: "Figma: Get Variable Actions",
+    description: "Get library analytics variable action data (apply, detach, modify).",
+    parameters: Type.Object({
+      file_key: Type.String(),
+      group_by: Type.String({ description: "variable or team" }),
+      start_date: Type.Optional(Type.String()),
+      end_date: Type.Optional(Type.String()),
+      cursor: Type.Optional(Type.String()),
+    }),
+    async execute(_t, params: any, signal: any) {
+      const qs = new URLSearchParams();
+      qs.set("group_by", params.group_by);
+      if (params.start_date) qs.set("start_date", params.start_date);
+      if (params.end_date) qs.set("end_date", params.end_date);
+      if (params.cursor) qs.set("cursor", params.cursor);
+      const data = await figmaFetch<any>(`/v1/analytics/libraries/${params.file_key}/variable/actions?${qs.toString()}`, {}, signal);
+      return { content: [{ type: "text", text: truncateJson(data) }], details: {} };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_get_variable_usages",
+    label: "Figma: Get Variable Usages",
+    description: "Get library analytics variable usage data.",
+    parameters: Type.Object({
+      file_key: Type.String(),
+      group_by: Type.String({ description: "variable or team" }),
+      start_date: Type.Optional(Type.String()),
+      end_date: Type.Optional(Type.String()),
+      cursor: Type.Optional(Type.String()),
+    }),
+    async execute(_t, params: any, signal: any) {
+      const qs = new URLSearchParams();
+      qs.set("group_by", params.group_by);
+      if (params.start_date) qs.set("start_date", params.start_date);
+      if (params.end_date) qs.set("end_date", params.end_date);
+      if (params.cursor) qs.set("cursor", params.cursor);
+      const data = await figmaFetch<any>(`/v1/analytics/libraries/${params.file_key}/variable/usages?${qs.toString()}`, {}, signal);
+      return { content: [{ type: "text", text: truncateJson(data) }], details: {} };
+    },
+  });
+
   /* ─── WEBHOOKS ──────────────────────────────────────── */
 
   pi.registerTool({
