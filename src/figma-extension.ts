@@ -1509,6 +1509,19 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  pi.registerTool({
+    name: "figma_plugin_get_node",
+    label: "Plugin: Get Node",
+    description: "Get full details of a specific node by ID from the open Figma file.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({ action: "getNode", node_id: params.node_id });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
   /* ─── ANALYTICS ─────────────────────────────────────── */
 
   pi.registerTool({
