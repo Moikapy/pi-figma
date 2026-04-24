@@ -39,8 +39,14 @@ try {
   const cmdMatches = [...source.matchAll(/pi\.registerCommand\("([^"]+)"/g)];
   const eventMatches = [...source.matchAll(/pi\.on\("([^"]+)"/g)];
 
-  console.log(`Detected ${toolMatches.length} tools:`);
-  toolMatches.forEach((m) => console.log(`  • ${m[1]}`));
+  const pluginTools = toolMatches.filter((m) => m[1].startsWith("figma_plugin_"));
+  const restTools = toolMatches.filter((m) => !m[1].startsWith("figma_plugin_"));
+
+  console.log(`Detected ${restTools.length} REST tools:`);
+  restTools.forEach((m) => console.log(`  • ${m[1]}`));
+
+  console.log(`\nDetected ${pluginTools.length} Plugin tools:`);
+  pluginTools.forEach((m) => console.log(`  • ${m[1]}`));
 
   console.log(`\nDetected ${cmdMatches.length} commands:`);
   cmdMatches.forEach((m) => console.log(`  • ${m[1]}`));
