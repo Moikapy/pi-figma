@@ -1148,6 +1148,48 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  pi.registerTool({
+    name: "figma_plugin_clone_node",
+    label: "Plugin: Clone Node",
+    description: "Duplicate an existing node in the open Figma file.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      name: Type.Optional(Type.String()),
+      x: Type.Optional(Type.Number()),
+      y: Type.Optional(Type.Number()),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "cloneNode",
+        node_id: params.node_id,
+        name: params.name,
+        x: params.x,
+        y: params.y,
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
+  pi.registerTool({
+    name: "figma_plugin_set_image_fill",
+    label: "Plugin: Set Image Fill",
+    description: "Upload an image and set it as the fill of a node.",
+    parameters: Type.Object({
+      node_id: Type.String(),
+      image_bytes: Type.String({ description: "Base64-encoded image bytes" }),
+      scale_mode: Type.Optional(Type.String({ description: "FILL, FIT, CROP, or TILE", default: "FILL" })),
+    }),
+    async execute(_t, params: any) {
+      const data = await sendPluginCmd({
+        action: "setImageFill",
+        node_id: params.node_id,
+        image_bytes: Array.from(Buffer.from(params.image_bytes, "base64")),
+        scaleMode: params.scale_mode,
+      });
+      return { content: [{ type: "text", text: truncateJson(data) }], details: data };
+    },
+  });
+
   /* ─── ANALYTICS ─────────────────────────────────────── */
 
   pi.registerTool({

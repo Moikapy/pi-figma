@@ -155,6 +155,22 @@ async function execute(action, params) {
       if (!node) throw new Error("Node not found");
       return { id: node.id, type: node.type, name: node.name };
     }
+    case "cloneNode": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node) throw new Error("Node not found");
+      const clone = node.clone();
+      if (params.x !== undefined) clone.x = params.x;
+      if (params.y !== undefined) clone.y = params.y;
+      if (params.name) clone.name = params.name;
+      return { id: clone.id, type: clone.type, name: clone.name };
+    }
+    case "setImageFill": {
+      const node = figma.getNodeById(params.node_id);
+      if (!node || !("fills" in node)) throw new Error("Node not found or does not support fills");
+      const image = figma.createImage(params.image_bytes ? new Uint8Array(params.image_bytes) : new Uint8Array(0));
+      node.fills = [{ type: "IMAGE", scaleMode: params.scaleMode || "FILL", imageHash: image.hash }];
+      return { id: node.id };
+    }
     case "getPageNodes": {
       return figma.currentPage.children.map((n) => ({ id: n.id, type: n.type, name: n.name }));
     }

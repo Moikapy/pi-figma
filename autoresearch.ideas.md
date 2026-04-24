@@ -1,12 +1,21 @@
 # Deferred Optimizations for pi-figma
 
-- [x] **Webhooks support** (5 tools) — Added: get_webhooks, get_webhook, post_webhook, update_webhook, delete_webhook ✓
-- [x] **oEmbed support** (1 tool) — Added: get_oembed ✓
-- [ ] **Library Analytics** (6 tools) — component actions/usages, style actions/usages, variable actions/usages
-- [ ] **Plugin node cloning** — `figma_plugin_clone_node` to duplicate existing nodes
-- [ ] **Plugin image fill import** — `figma_plugin_set_image_fill` to import external images into Figma
-- [ ] **Better token normalization** — `figma_extract_tokens` should output W3C design tokens format
-- [ ] **Batch operations** — Allow plugin tools to accept arrays for bulk creation
+## Done ✓
+- [x] **Webhooks** (5 tools)
+- [x] **oEmbed** (1 tool)
+- [x] **Library Analytics** (6 tools)
+- [x] **Core REST API** — Files, Nodes, Images, Comments, Projects, Users, Components, Styles, Variables, Dev Resources
+- [x] **Design-to-code wizard** — /figma-to-react command
+- [x] **Companion plugin** — 12 tools for direct design creation/modification
+
+## Pending — needs companion plugin connected in Figma
+- [ ] **Test plugin end-to-end** — create_frame, create_text, set_fill, etc. on user's moikas.com file
+- [ ] **Plugin node cloning** — `figma_plugin_clone_node`
+- [ ] **Plugin image fill import** — `figma_plugin_set_image_fill`
 - [ ] **Undo/redo awareness** — Group plugin commands into Figma transactions
-- [ ] **Cloud relay** — Replace localhost relay with a Cloudflare Durable Object so plugin works without a local server
+
+## Architecture — longer term
+- [ ] **Batch operations** — Allow plugin tools to accept arrays for bulk creation
+- [ ] **Cloud relay** — Replace localhost relay with a Cloudflare Durable Object
 - [ ] **npm publish** — Package the extension for `pi install @moikapy/pi-figma`
+- [ ] **Better token normalization** — `figma_extract_tokens` outputs W3C design tokens format
