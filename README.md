@@ -2,7 +2,7 @@
 
 Repo: https://github.com/Moikapy/pi-figma
 
-A [pi](https://github.com/badlogic/pi-mono) extension that turns Figma designs into web apps and vice versa. Provides **34 tools** covering the full Figma REST API surface, plus smart composite helpers for design-to-code workflows.
+A [pi](https://github.com/badlogic/pi-mono) extension that turns Figma designs into web apps and vice versa. Provides **42 tools** covering the full Figma REST API surface plus a **companion Figma plugin** for direct design creation and modification.
 
 ## Features
 
@@ -12,6 +12,7 @@ A [pi](https://github.com/badlogic/pi-mono) extension that turns Figma designs i
 - 🎨 **Extract tokens** — design tokens (colors, typography, spacing) from styles + variables
 - 📊 **Screens overview** — high-level summary of pages and frames before deep-diving
 - 🧙 **Design-to-Code Wizard** — `/figma-to-react` command walks you through picking a frame and converting it to React + Tailwind
+- 🔌 **Companion Plugin** — Create, modify, and delete Figma nodes directly via a local WebSocket relay (rectangles, frames, text, fills, etc.)
 - 🔐 **OAuth + PAT** — personal access tokens or full OAuth 2.0 flow
 
 ## Install
@@ -65,6 +66,7 @@ ln -s $(pwd)/src/figma-extension.ts ~/.pi/extensions/figma.ts
 |---------|-------------|
 | `/figma-auth` | Authenticate with Figma (PAT or OAuth 2.0) |
 | `/figma-to-react` | Interactive wizard: pick a frame → fetch data → generate React + Tailwind |
+| `/figma-relay` | Show instructions for starting the companion plugin relay |
 
 ## Tools
 
@@ -116,7 +118,35 @@ ln -s $(pwd)/src/figma-extension.ts ~/.pi/extensions/figma.ts
 
 > 💡 See `.pi/skills/figma-design-to-code/SKILL.md` for detailed translation rules (Auto Layout → Flexbox, fills → Tailwind classes, etc.)
 
-## Write Operations
+| `figma_plugin_create_frame` | Create a frame via companion plugin | Plugin API |
+| `figma_plugin_create_rectangle` | Create a rectangle via companion plugin | Plugin API |
+| `figma_plugin_create_text` | Create a text node via companion plugin | Plugin API |
+| `figma_plugin_set_fill` | Set fill on an existing node | Plugin API |
+| `figma_plugin_set_position` | Move an existing node | Plugin API |
+| `figma_plugin_set_size` | Resize an existing node | Plugin API |
+| `figma_plugin_delete_node` | Delete a node | Plugin API |
+| `figma_plugin_get_page_nodes` | List top-level nodes on current page | Plugin API |
+
+## Companion Plugin (Direct Design Modification)
+
+The Figma REST API is read-only for design geometry. To **create or modify frames, rectangles, text, etc.**, use the companion plugin:
+
+### 1. Start the relay
+
+```bash
+bun src/ws-relay.ts
+```
+
+### 2. Import the plugin in Figma
+
+1. Open Figma Desktop or Browser
+2. Right-click → Plugins → Development → Import plugin from manifest
+3. Select `companion-plugin/manifest.json`
+4. The plugin auto-connects to `ws://localhost:8787/ws`
+
+### 3. Use pi tools
+
+With the plugin open, pi tools like `figma_plugin_create_frame`, `figma_plugin_create_text`, `figma_plugin_set_fill` send commands through the relay and modify the open Figma file in real time.
 
 The Figma REST API is **read-only for design geometry**. The extension supports all available write endpoints:
 
