@@ -241,6 +241,59 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  pi.registerCommand("figma-to-react", {
+    description: "Convert a Figma frame to a React + Tailwind component",
+    handler: async (_args, ctx) => {
+      const fileKey = await ctx.ui.input("Figma file key or URL:", "e.g. abc123...");
+      if (!fileKey) { ctx.ui.notify("Cancelled.", "warning"); return; }
+      const key = fileKey.replace(/^.*file\//, "").split("/")[0];
+      ctx.ui.setWorkingMessage("Loading Figma file...");
+
+      try {
+        const summary = (await figmaFetch<any>(`/v1/files/${key}?depth=2`)).document.children
+          .flatMap((page: any) =>
+            page.children?.filter((c: any) => c.type === "FRAME").map((f: any) => ({
+              label: `${page.name} › ${f.name}`,
+              value: f.id,
+            }))
+          )
+          .filter(Boolean);
+        if (!summary.length) { ctx.ui.notify("No frames found.", "warning"); return; }
+
+        const frameId = await ctx.ui.select("Pick a frame to convert:", summary.map((s: any) => s.label));
+        if (!frameId) { ctx.ui.notify("Cancelled.", "warning"); return; }
+        const selectedFrame = summary.find((s: any) => s.label === frameId)?.value;
+
+        ctx.ui.setWorkingMessage("Exporting assets + tokens...");
+        const [frameData, tokens, imageUrls] = await Promise.all([
+          figmaFetch<any>(`/v1/files/${key}/nodes?ids=${encodeURIComponent(selectedFrame)}&depth=4`, {}, undefined),
+          figmaFetch<any>(`/v1/files/${key}/styles`, {}, undefined).catch(() => ({} as any)),
+          figmaFetch<any>(`/v1/images/${key}?ids=${encodeURIComponent(selectedFrame)}&format=svg&scale=2`, {}, undefined).catch(() => ({})),
+        ]);
+
+        const payload = {
+          file_key: key,
+          frame_id: selectedFrame,
+          frame: frameData.nodes[selectedFrame]?.document,
+          tokens,
+          image_urls: imageUrls.images,
+          instruction: "Convert this Figma frame into a React + Tailwind component. Follow the SKILL.md rules.",
+        };
+
+        pi.sendMessage({
+          customType: "figma-wizard",
+          content: `Design data loaded for frame \`${selectedFrame}\`. Ready to convert to React + Tailwind.`,
+          display: true,
+          details: payload,
+        }, { triggerTurn: true });
+      } catch (e: any) {
+        ctx.ui.notify(e.message, "error");
+      } finally {
+        ctx.ui.setWorkingMessage(undefined);
+      }
+    },
+  });
+
   /* ─── FILES ─────────────────────────────────────────────── */
 
   pi.registerTool({
